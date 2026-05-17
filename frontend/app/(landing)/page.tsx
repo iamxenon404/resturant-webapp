@@ -1,4 +1,4 @@
-import Header from './LD/Header';
+// import Header from './LD/Header';
 import Hero from './LD/Hero';
 // import About from './LD/About';
 // import Menu from './LD/Menu';
