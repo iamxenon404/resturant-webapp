@@ -3,7 +3,7 @@ import Hero from './LD/Hero';
 import About from './LD/About';
 import Menu from './LD/Menu';
 import Contact from './LD/Contact';
-import Footer from './LD/Footer';
+// import Footer from './LD/Footer';
 
 export default function LandingPage() {
   return (
