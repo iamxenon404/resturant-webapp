@@ -1,5 +1,6 @@
 // import Header from './LD/Header';
 import About from './LD/About';
+import Contact from './LD/Contact';
 import Header from './LD/Header';
 import Hero from './LD/Hero';
 import Menu from './LD/Menu';
