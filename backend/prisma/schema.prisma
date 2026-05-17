@@ -1,0 +1,60 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+enum UserRole {
+  customer
+  restaurant_admin
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  preparing
+  ready
+  picked_up
+  delivered
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(customer)
+  phone     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  items     MenuItem[]
+  sortOrder Int        @default(0)
+}
+
+model MenuItem {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  image       String?
+  available   Boolean  @default(true)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  status          OrderStatus @default(pending)
+  total           Float
+  deliveryAddress String
+  paymentRef      String?     
+  kwikRef         String?     
+  createdAt       DateTime    @default(now())
+}
