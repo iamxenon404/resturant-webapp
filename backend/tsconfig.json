@@ -16,10 +16,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    // Fixes the Jest "Cannot find name 'describe'" errors
-    "types": ["node", "jest"],
-    // Silences the deprecation warning
-    "ignoreDeprecations": "6.0",
-    "baseUrl": "./"
+    "types": ["node", "jest"]
   }
 }
