@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, InternalServerErrorException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPgWasm } from '@prisma/pg-worker';
+// import { PrismaPgWasm } from '@prisma/pg-worker';
+import PrismaPgWasm from '@prisma/pg-worker'; // Default import (Correct)
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
