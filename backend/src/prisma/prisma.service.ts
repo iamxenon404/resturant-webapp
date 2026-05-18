@@ -12,9 +12,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    // Let the Prisma 7 client constructor automatically absorb the connection strings
-    // mapped inside your prisma.config.ts runtime context natively.
-    super();
+    // Prisma 7 requires passing configuration options directly to super when subclassing.
+    // Specifying the explicit engine type parameter clears out the constructor validation layer.
+    super({
+      datasources: {
+        db: {
+          url: dbUrl,
+        },
+      },
+    });
   }
 
   async onModuleInit() {
