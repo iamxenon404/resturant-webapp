@@ -1,7 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, InternalServerErrorException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-// import { PrismaPgWasm } from '@prisma/pg-worker';
-import PrismaPgWasm from '@prisma/pg-worker'; // Default import (Correct)
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -14,11 +12,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    super({
-      adapter: new PrismaPgWasm({
-        url: dbUrl,
-      }),
-    });
+    // Let the Prisma 7 client constructor automatically absorb the connection strings
+    // mapped inside your prisma.config.ts runtime context natively.
+    super();
   }
 
   async onModuleInit() {
