@@ -1,7 +1,8 @@
 'use client';
 
+import { registerUser } from '@/app/lib/api';
 import { useState } from 'react';
-import { registerUser } from '@/lib/api';
+// import { registerUser } from '@/lib/api';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
