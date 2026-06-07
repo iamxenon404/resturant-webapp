@@ -56,14 +56,10 @@ export class AuthService {
 
     const data = await response.json();
 
-if (!response.ok) {
-  // Log this so you can see it in your Nest terminal!
-  console.error('Supabase raw error data:', data); 
-  
-  throw new BadRequestException(
-    data.error_description || data.message || 'Invalid email or password'
-  );
-}
+    if (!response.ok) {
+      throw new BadRequestException(data.error_description || 'Invalid email or password');
+    }
+
     // Returns access_token, refresh_token, and user profile metadata back to Next.js
     return {
       success: true,
