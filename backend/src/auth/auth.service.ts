@@ -23,9 +23,14 @@ export class AuthService {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new BadRequestException(data.msg || 'Registration failed at auth provider');
-    }
+ if (!response.ok) {
+  // Log this so you can see it in your Nest terminal!
+  console.error('Supabase raw error data:', data); 
+  
+  throw new BadRequestException(
+    data.error_description || data.message || 'Invalid email or password'
+  );
+}
 
     // 2. Mirror the record inside your Supabase PostgreSQL database via Prisma
     const newUser = await this.prisma.user.create({
