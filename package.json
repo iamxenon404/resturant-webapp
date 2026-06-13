@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/iamxenon404/resturant-webapp/issues"
   },
-  "homepage": "https://github.com/iamxenon404/resturant-webapp#readme"
+  "homepage": "https://github.com/iamxenon404/resturant-webapp#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
 }
