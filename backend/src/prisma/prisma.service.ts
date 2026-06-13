@@ -16,29 +16,42 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    // 1. Create a single, stable direct connection client
+    // 1. Initialize the standard Node-pg client safely
     const dbClient = new Client({ 
       connectionString: dbUrl,
-      ssl: { rejectUnauthorized: false } // Ensures Render's SSL requirement passes
+      ssl: { rejectUnauthorized: false }
     });
 
-    // 2. Wrap it in the Prisma Adapter the Wasm engine is begging for
+    // 2. Prevent unhandled socket errors from crashing Node globally
+    dbClient.on('error', (err) => {
+      console.error('Low-level pg driver error caught safely:', err.message);
+    });
+
+    // 3. Wrap it inside the adapter
     const adapter = new PrismaPg(dbClient);
 
-    // 3. Pass it to the parent constructor
     super({ adapter });
     this.dbClient = dbClient;
   }
 
   async onModuleInit() {
-    // Connect the underlying database driver first
-    await this.dbClient.connect();
-    // Then connect Prisma
-    await this.$connect();
+    try {
+      // Connect the driver client securely first
+      await this.dbClient.connect();
+      // Connect the Prisma abstraction engine second
+      await this.$connect();
+      console.log('Successfully connected to Render database via Wasm engine.');
+    } catch (error) {
+      console.error('Database initialization failed:', error);
+    }
   }
 
   async onModuleDestroy() {
-    await this.$disconnect();
-    await this.dbClient.end(); // Gracefully disconnect the driver loop
+    try {
+      await this.$disconnect();
+      await this.dbClient.end();
+    } catch (error) {
+      console.error('Error disconnecting database gracefully:', error);
+    }
   }
 }
