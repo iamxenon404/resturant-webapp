@@ -1,12 +1,10 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, InternalServerErrorException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Client } from 'pg';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import { Pool } from '@neondatabase/serverless';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  private dbClient: Client;
-
   constructor() {
     const dbUrl = process.env.DATABASE_URL;
     
@@ -16,42 +14,21 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    // 1. Initialize the standard Node-pg client safely
-    const dbClient = new Client({ 
-      connectionString: dbUrl,
-      ssl: { rejectUnauthorized: false }
-    });
+    // 1. Establish the explicit Serverless Pool with connection string
+    const neonPool = new Pool({ connectionString: dbUrl });
 
-    // 2. Prevent unhandled socket errors from crashing Node globally
-    dbClient.on('error', (err) => {
-      console.error('Low-level pg driver error caught safely:', err.message);
-    });
-
-    // 3. Wrap it inside the adapter
-    const adapter = new PrismaPg(dbClient);
+    // 2. Wrap it directly into the Neon Prisma driver adapter mapping
+    const adapter = new PrismaNeon(neonPool as any);
 
     super({ adapter });
-    this.dbClient = dbClient;
   }
 
   async onModuleInit() {
-    try {
-      // Connect the driver client securely first
-      await this.dbClient.connect();
-      // Connect the Prisma abstraction engine second
-      await this.$connect();
-      console.log('Successfully connected to Render database via Wasm engine.');
-    } catch (error) {
-      console.error('Database initialization failed:', error);
-    }
+    await this.$connect();
+    console.log('Successfully connected to Render PostgreSQL via secure Neon Serverless Pool.');
   }
 
   async onModuleDestroy() {
-    try {
-      await this.$disconnect();
-      await this.dbClient.end();
-    } catch (error) {
-      console.error('Error disconnecting database gracefully:', error);
-    }
+    await this.$disconnect();
   }
 }
