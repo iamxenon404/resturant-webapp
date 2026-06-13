@@ -6,7 +6,7 @@ async function bootstrap() {
 
   // 1. Enable CORS to handle preflight OPTIONS requests from your frontend
   app.enableCors({
-    origin: 'http://localhost:3001', // Your Next.js development server URL
+    origin: 'http://localhost:3000', // Your Next.js development server URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
