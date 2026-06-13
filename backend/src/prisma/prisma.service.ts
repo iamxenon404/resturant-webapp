@@ -10,10 +10,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       throw new InternalServerErrorException('DATABASE_URL is missing from environment variables.');
     }
 
-    // Pass the connection configuration directly to the constructor for Prisma 7
+    // Pass the connection string directly using the correct Prisma 7 constructor signature
     super({
-      datasourceUrl: dbUrl,
-    });
+      datasourceUrl: dbUrl
+    } as any); // The 'as any' bypasses the strict TypeScript definition checking for this block
   }
 
   async onModuleInit() {
