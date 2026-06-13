@@ -12,11 +12,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    // FORCE THE ENGINE TYPE TO LIBRARY HERE IN JAVASCRIPT
     super({
       log: ['error', 'warn'],
-      // @ts-ignore - This forces Prisma to drop the client check completely
-      engineType: 'library', 
     });
   }
 
