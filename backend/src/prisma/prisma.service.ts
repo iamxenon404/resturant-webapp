@@ -12,14 +12,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       );
     }
 
-    // Pass the standard configuration natively to PrismaClient
+    // FORCE THE ENGINE TYPE TO LIBRARY HERE IN JAVASCRIPT
     super({
       log: ['error', 'warn'],
+      // @ts-ignore - This forces Prisma to drop the client check completely
+      engineType: 'library', 
     });
   }
 
   async onModuleInit() {
-    // This connects directly and securely using Prisma's native engine
     await this.$connect();
   }
 
