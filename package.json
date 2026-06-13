@@ -1,0 +1,20 @@
+{
+  "name": "resturant-web",
+  "version": "1.0.0",
+  "description": "A full-stack restaurant ordering platform that lets customers order directly from a restaurant's own website — cutting out third-party commission platforms like Glovo and Jumia Food.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamxenon404/resturant-webapp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iamxenon404/resturant-webapp/issues"
+  },
+  "homepage": "https://github.com/iamxenon404/resturant-webapp#readme"
+}
