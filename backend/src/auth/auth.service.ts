@@ -1,80 +1,79 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
-  private supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  private supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // 10 salt rounds is the standard security benchmark for hashing
+  private readonly SALT_ROUNDS = 10;
 
   constructor(private prisma: PrismaService) {}
 
-async signUp(body: any) {
-  try {
-    const { email, password, name, phone } = body;
+  async signUp(body: any) {
+    try {
+      const { email, password, name, phone } = body;
 
-    // 1. Register the user inside Supabase Auth GoTrue instance
-    const response = await fetch(`${this.supabaseUrl}/auth/v1/signup`, {
-      method: 'POST',
-      headers: {
-        'apikey': this.supabaseAnonKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+      // 1. Check if the user already exists in your Render DB
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
 
-    const data = await response.json();
+      if (existingUser) {
+        throw new BadRequestException('User already registered');
+      }
 
-    if (!response.ok) {
-      console.error('Supabase Auth Signup Failed:', data);
-      throw new BadRequestException(data.msg || 'Registration failed at auth provider');
+      // 2. Securely hash the password so it isn't saved as plain text
+      const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
+
+      // 3. Create the user directly inside your Render PostgreSQL database
+      const newUser = await this.prisma.user.create({
+        data: {
+          id: crypto.randomUUID(), // Generates a standard clean UUID string
+          email,
+          password: hashedPassword, // Make sure your Prisma schema has a password field!
+          name,
+          phone,
+          role: 'customer',
+        },
+      });
+
+      // Don't send the password hash back to the frontend
+      const { password: _, ... userWithoutPassword } = newUser;
+      return { success: true, user: userWithoutPassword };
+
+    } catch (error) {
+      console.error('CRITICAL SIGNUP ERROR IN NESTJS:', error);
+      throw error;
     }
-
-    console.log('Supabase Auth Success data:', data);
-
-    // 2. Mirror the record inside your Supabase PostgreSQL database via Prisma
-    const newUser = await this.prisma.user.create({
-      data: {
-        id: data.id || data.user?.id, 
-        email,
-        name,
-        phone,
-        role: 'customer',
-      },
-    });
-
-    return { success: true, user: newUser };
-
-  } catch (error) {
-    // THIS WILL FORCE THE 500 ERROR TO SHOW IN YOUR TERMINAL
-    console.error('CRITICAL SIGNUP ERROR IN NESTJS:', error);
-    throw error; 
   }
-}
 
   async login(body: any) {
     const { email, password } = body;
 
-    // Authenticate credentials directly against Supabase API
-    const response = await fetch(`${this.supabaseUrl}/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: {
-        'apikey': this.supabaseAnonKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
+    // 1. Look up the user by email
+    const user = await this.prisma.user.findUnique({
+      where: { email },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new BadRequestException(data.error_description || 'Invalid email or password');
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Returns access_token, refresh_token, and user profile metadata back to Next.js
+    // 2. Compare the incoming password with the hashed password in Render
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    // 3. Authenticated successfully! 
     return {
       success: true,
-      token: data.access_token,
-      user: data.user,
+      message: 'Logged in successfully',
+      user: userWithoutPassword,
     };
   }
 }
